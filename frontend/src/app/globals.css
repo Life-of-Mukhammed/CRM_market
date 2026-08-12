@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  :root {
+    --primary: #4a2482;
+    --primary-light: #5c2fa0;
+    --accent: #d4af37;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+  }
+
+  .dark {
+    --background: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+  }
+
+  body {
+    @apply bg-[var(--background)] text-[var(--text)] font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html { scroll-behavior: smooth; }
+}
+
+@layer components {
+  .card {
+    @apply bg-white dark:bg-dark-800 rounded-2xl shadow-card border border-gray-100 dark:border-dark-700;
+  }
+
+  .btn-primary {
+    @apply bg-primary-800 hover:bg-primary-900 text-white font-semibold px-4 py-2.5 rounded-xl
+           transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-white dark:bg-dark-700 hover:bg-gray-50 dark:hover:bg-dark-600 text-gray-700 dark:text-gray-200
+           font-semibold px-4 py-2.5 rounded-xl border border-gray-200 dark:border-dark-600
+           transition-all duration-200 active:scale-95;
+  }
+
+  .btn-accent {
+    @apply bg-accent hover:bg-accent-600 text-white font-semibold px-4 py-2.5 rounded-xl
+           transition-all duration-200 active:scale-95;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-xl
+           transition-all duration-200 active:scale-95;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-dark-600
+           bg-white dark:bg-dark-700 text-gray-900 dark:text-gray-100
+           placeholder:text-gray-400 dark:placeholder:text-gray-500
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+           transition-all duration-200 text-sm;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .stat-card {
+    @apply card p-5 flex flex-col gap-2 hover:shadow-card-hover transition-shadow duration-200;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+           text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-700
+           hover:text-primary-800 dark:hover:text-primary-400
+           transition-all duration-150;
+  }
+
+  .sidebar-link.active {
+    @apply bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-400;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { @apply bg-transparent; }
+::-webkit-scrollbar-thumb { @apply bg-gray-300 dark:bg-gray-600 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-gray-400 dark:bg-gray-500; }
+
+/* POS specific */
+.pos-product-card {
+  @apply card p-3 cursor-pointer hover:shadow-card-hover hover:border-primary-300
+         active:scale-95 transition-all duration-150 select-none;
+}
+
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: white !important; }
+}
+
+.print-only { display: none; }
