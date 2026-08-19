@@ -19,7 +19,7 @@ export function Receipt({ sale, open, onClose }: ReceiptProps) {
       {/* Thermal receipt preview */}
       <div className="font-mono text-xs">
         <div className="text-center border-b border-dashed border-gray-300 dark:border-gray-600 pb-3 mb-3">
-          <div className="text-base font-black">MARKET</div>
+          <div className="text-base font-black">AYFA</div>
           <div className="text-gray-500">Атир ва китоб дўкони</div>
         </div>
 
@@ -81,7 +81,7 @@ export function Receipt({ sale, open, onClose }: ReceiptProps) {
       <div className="print-only fixed inset-0 bg-white p-4 font-mono text-xs">
         <div className="max-w-xs mx-auto">
           <div className="text-center mb-4">
-            <div className="text-lg font-black">MARKET</div>
+            <div className="text-lg font-black">AYFA</div>
             <div>Атир ва китоб дўкони</div>
           </div>
           <div className="border-t border-black pt-2 mb-2">

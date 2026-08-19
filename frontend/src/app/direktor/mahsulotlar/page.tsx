@@ -104,6 +104,7 @@ export default function MahsulotlarPage() {
     setValue('costPrice', product.costPrice);
     setValue('salePrice', product.salePrice);
     setValue('unit', product.unit);
+    setValue('quantity', product.quantity);
     setValue('image', product.image || '');
     setModalOpen(true);
   };
@@ -378,17 +379,22 @@ export default function MahsulotlarPage() {
               </select>
             </div>
 
-            {!editProduct && (
-              <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Бошланғич миқдор</label>
-                <input
-                  {...register('quantity', { valueAsNumber: true })}
-                  type="number"
-                  className="input"
-                  placeholder="0"
-                />
-              </div>
-            )}
+            <div>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                {editProduct ? 'Миқдор (омборда)' : 'Бошланғич миқдор'}
+              </label>
+              <input
+                {...register('quantity', { valueAsNumber: true })}
+                type="number"
+                className="input"
+                placeholder="0"
+              />
+              {editProduct && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Янги товар келганда шу сонни жамига қўшиб ёзинг (масалан, омборда 5 та бор, 10 та келди — 15 деб ёзинг).
+                </p>
+              )}
+            </div>
 
             <div className="sm:col-span-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Расм URL (ихтиёрий)</label>

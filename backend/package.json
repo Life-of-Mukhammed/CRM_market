@@ -7,7 +7,9 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "db:seed": "tsx src/seed.ts"
+    "db:seed": "tsx src/seed.ts",
+    "db:reset": "tsx src/reset.ts",
+    "db:clear": "tsx src/clearData.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",

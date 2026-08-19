@@ -3,8 +3,8 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'MARKET - Бошқарув тизими',
-  description: "MARKET атир ва китоб дўкони бошқарув тизими",
+  title: 'AYFA - Бошқарув тизими',
+  description: "AYFA дўкон бошқарув тизими",
   icons: {
     icon: '/favicon.svg',
   },

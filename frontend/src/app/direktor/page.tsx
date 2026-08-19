@@ -44,7 +44,7 @@ export default function DirektorDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-gray-900 dark:text-white">Аналитика дашборд</h1>
-            <p className="text-gray-500 text-sm mt-1">MARKET дўкон кўрсаткичлари</p>
+            <p className="text-gray-500 text-sm mt-1">AYFA дўкон кўрсаткичлари</p>
           </div>
           <div className="flex gap-1 p-1 bg-gray-100 dark:bg-dark-700 rounded-xl">
             {(Object.keys(periodLabels) as Period[]).map((p) => (

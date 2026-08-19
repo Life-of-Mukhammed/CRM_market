@@ -71,7 +71,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <span className="text-white font-black text-lg">I</span>
           </div>
           <div>
-            <h1 className="font-black text-gray-900 dark:text-white text-lg leading-none">MARKET</h1>
+            <h1 className="font-black text-gray-900 dark:text-white text-lg leading-none">AYFA</h1>
             <p className="text-xs text-gray-400 mt-0.5">Атир ва китоб дўкони</p>
           </div>
         </div>
@@ -130,7 +130,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           >
             <MenuIcon />
           </button>
-          <span className="font-black text-gray-900 dark:text-white">MARKET</span>
+          <span className="font-black text-gray-900 dark:text-white">AYFA</span>
         </header>
 
         {/* Content */}

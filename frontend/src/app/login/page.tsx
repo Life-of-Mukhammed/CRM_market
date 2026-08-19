@@ -57,7 +57,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-2xl mb-4">
             <MarketLogo />
           </div>
-          <h1 className="text-white text-3xl font-black tracking-tight">MARKET</h1>
+          <h1 className="text-white text-3xl font-black tracking-tight">AYFA</h1>
           <p className="text-white/60 text-sm mt-1">Атир ва китоб дўкони</p>
         </div>
 
@@ -117,7 +117,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-white/40 text-xs mt-6">
-          © 2026 MARKET Бошқарув тизими
+          © 2026 AYFA Бошқарув тизими
         </p>
       </div>
     </div>

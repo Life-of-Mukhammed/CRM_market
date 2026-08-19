@@ -6,13 +6,10 @@ import { Product } from './models/Product';
 import { Category } from './models/Category';
 import mongoose from 'mongoose';
 
-async function main() {
-  await connectDB();
-  console.log('MARKET uchun ma\'lumotlar bazasi to\'ldirilmoqda...');
+export const direktorPhone = '+998901111111';
+export const kassirPhone = '+998903333333';
 
-  const direktorPhone = '+998901111111';
-  const kassirPhone = '+998903333333';
-
+export async function seedUsers() {
   const direktor = await User.findOneAndUpdate(
     { phone: direktorPhone },
     {
@@ -38,6 +35,13 @@ async function main() {
   );
 
   console.log('Foydalanuvchilar yaratildi:', direktor.name, kassir.name);
+  return { direktor, kassir };
+}
+
+export async function seed() {
+  console.log('MARKET uchun ma\'lumotlar bazasi to\'ldirilmoqda...');
+
+  const { direktor } = await seedUsers();
 
   const atirCat = await Category.findOneAndUpdate(
     { name: 'Atirlar' },
@@ -81,9 +85,12 @@ async function main() {
   console.log('\nDIQQAT: Ishlab chiqarishda parollarni albatta o\'zgartiring!');
 }
 
-main()
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  })
-  .finally(() => mongoose.disconnect());
+if (require.main === module) {
+  connectDB()
+    .then(seed)
+    .catch((err) => {
+      console.error(err);
+      process.exitCode = 1;
+    })
+    .finally(() => mongoose.disconnect());
+}
