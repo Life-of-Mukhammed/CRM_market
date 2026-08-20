@@ -61,17 +61,23 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
           return;
         }
 
+        // Device labels (and therefore reliable back/front identification)
+        // are only populated once camera permission has already been
+        // granted on this origin. On a first-ever scan (very common on
+        // iPhone Safari) every label is blank, so guessing "last device"
+        // frequently grabs the front-facing camera. Prefer a labeled back
+        // camera when we have one; otherwise let the browser pick the
+        // physical camera via facingMode instead of guessing a deviceId.
         const backCamera = videoDevices.find((d) => /back|rear|environment/i.test(d.label));
-        const selected = backCamera || videoDevices[videoDevices.length - 1];
-        setCameraLabel(selected.label || 'Камера');
+        setCameraLabel(backCamera?.label || 'Камера');
 
         // Soft resolution preference only (`ideal`, never `min`/`exact`) —
         // a 1D barcode needs enough pixels to resolve its thin bars, but
         // this must never hard-fail on a camera that can't hit it.
         const constraints: MediaStreamConstraints = {
           video: {
-            deviceId: selected.deviceId ? { exact: selected.deviceId } : undefined,
-            facingMode: selected.deviceId ? undefined : { ideal: 'environment' },
+            deviceId: backCamera ? { exact: backCamera.deviceId } : undefined,
+            facingMode: backCamera ? undefined : { ideal: 'environment' },
             width: { ideal: 1280 },
             height: { ideal: 720 },
           },

@@ -32,6 +32,15 @@ export async function reportsRoutes(app: FastifyInstance) {
     const products = await Product.find({}, 'costPrice');
     for (const p of products) productCostMap.set(p.id, p.costPrice);
 
+    // Value of everything currently sitting in stock (active products only)
+    const stockProducts = await Product.find({ isActive: true }, 'quantity costPrice salePrice');
+    let stockValueCost = 0;
+    let stockValueSale = 0;
+    for (const p of stockProducts) {
+      stockValueCost += p.quantity * p.costPrice;
+      stockValueSale += p.quantity * p.salePrice;
+    }
+
     const totalRevenue = sales.reduce((sum, s) => sum + s.finalAmount, 0);
     const totalCost = sales.reduce((sum, sale) => {
       return (
@@ -102,6 +111,8 @@ export async function reportsRoutes(app: FastifyInstance) {
         totalCost,
         grossProfit,
         salesCount: sales.length,
+        stockValueCost,
+        stockValueSale,
       },
       topProducts,
       kassirStats: Array.from(kassirStats.values()),

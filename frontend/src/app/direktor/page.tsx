@@ -82,6 +82,26 @@ export default function DirektorDashboard() {
           </div>
         )}
 
+        {/* Stock value */}
+        {!isLoading && (
+          <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              title="Омбордаги товар (таннарх)"
+              value={formatMoney(s?.stockValueCost || 0)}
+              sub="Сотиб олинган нархда"
+              icon="🏬"
+              color="purple"
+            />
+            <StatCard
+              title="Омбордаги товар (сотув нархида)"
+              value={formatMoney(s?.stockValueSale || 0)}
+              sub="Сотилса келадиган тушум"
+              icon="🏷️"
+              color="blue"
+            />
+          </div>
+        )}
+
         {/* Low stock alert */}
         {lowStock.length > 0 && (
           <div className="card p-4 border-l-4 border-l-red-500">

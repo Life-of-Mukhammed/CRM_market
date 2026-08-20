@@ -70,6 +70,8 @@ export interface DashboardStats {
     totalCost: number;
     grossProfit: number;
     salesCount: number;
+    stockValueCost: number;
+    stockValueSale: number;
   };
   topProducts: {
     id: string;

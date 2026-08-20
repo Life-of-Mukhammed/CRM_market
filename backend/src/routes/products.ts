@@ -50,7 +50,21 @@ export async function productRoutes(app: FastifyInstance) {
 
   app.get('/barcode/:barcode', { preHandler: [authenticate] }, async (request, reply) => {
     const { barcode } = request.params as { barcode: string };
-    const product = await Product.findOne({ barcode, isActive: true }).populate('category', 'name icon');
+    const code = barcode.trim();
+
+    // EAN-13 codes are just a UPC-A code with a leading 0. Different
+    // cameras/decoders (native BarcodeDetector vs the ZXing JS fallback used
+    // on iOS Safari) aren't consistent about which form they report for the
+    // same physical barcode, so a product saved under one form must still
+    // resolve when scanned as the other.
+    const candidates = new Set([code]);
+    if (/^0\d{12}$/.test(code)) candidates.add(code.slice(1));
+    if (/^\d{12}$/.test(code)) candidates.add(`0${code}`);
+
+    const product = await Product.findOne({
+      barcode: { $in: Array.from(candidates) },
+      isActive: true,
+    }).populate('category', 'name icon');
     if (!product) return reply.status(404).send({ error: 'Бундай штрих-кодли товар мавжуд эмас' });
     return product;
   });
