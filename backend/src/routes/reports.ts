@@ -99,10 +99,10 @@ export async function reportsRoutes(app: FastifyInstance) {
       }
     }
 
-    // Low stock alerts
+    // Out-of-stock alerts
     const lowStock = await Product.find({
       isActive: true,
-      $expr: { $lte: ['$quantity', '$minAlert'] },
+      quantity: { $lte: 0 },
     }).sort({ quantity: 1 });
 
     return {

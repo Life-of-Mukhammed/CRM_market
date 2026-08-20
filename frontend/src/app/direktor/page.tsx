@@ -105,7 +105,7 @@ export default function DirektorDashboard() {
         {/* Low stock alert */}
         {lowStock.length > 0 && (
           <div className="card p-4 border-l-4 border-l-red-500">
-            <p className="font-bold text-red-600 flex items-center gap-2 mb-2">⚠️ Омборда кам қолган маҳсулотлар</p>
+            <p className="font-bold text-red-600 flex items-center gap-2 mb-2">⚠️ Омборда тугаган маҳсулотлар</p>
             <div className="flex flex-wrap gap-2">
               {lowStock.map((p) => (
                 <span key={p.id} className="badge bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400">
