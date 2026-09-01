@@ -1,6 +1,7 @@
 export type Role = 'DIREKTOR' | 'KASSIR';
 export type PaymentType = 'NAQD' | 'KARTA' | 'ARALASH';
 export type SaleStatus = 'COMPLETED' | 'CANCELLED';
+export type ExpenseCategory = 'ARENDA' | 'KOMMUNAL' | 'OYLIK' | 'TRANSPORT' | 'BOSHQA';
 
 export interface User {
   id: string;
@@ -64,11 +65,24 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface Expense {
+  id: string;
+  title: string;
+  category: ExpenseCategory;
+  amount: number;
+  note?: string;
+  date: string;
+  createdBy: { id: string; name: string } | string;
+  createdAt: string;
+}
+
 export interface DashboardStats {
   summary: {
     totalRevenue: number;
     totalCost: number;
     grossProfit: number;
+    totalExpenses: number;
+    netProfit: number;
     salesCount: number;
     stockValueCost: number;
     stockValueSale: number;

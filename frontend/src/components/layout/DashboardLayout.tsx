@@ -24,6 +24,7 @@ const navItems: NavItem[] = [
   { href: '/direktor/mahsulotlar', label: 'Маҳсулотлар', icon: '📦', roles: ['DIREKTOR'] },
   { href: '/direktor/kategoriyalar', label: 'Категориялар', icon: '🏷️', roles: ['DIREKTOR'] },
   { href: '/direktor/savdo', label: 'Барча савдолар', icon: '💰', roles: ['DIREKTOR'] },
+  { href: '/direktor/xarajatlar', label: 'Харажатлар', icon: '💸', roles: ['DIREKTOR'] },
 ];
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {

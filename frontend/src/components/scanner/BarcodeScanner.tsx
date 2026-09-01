@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } from '@zxing/library';
 import toast from 'react-hot-toast';
+import { cn } from '@/lib/utils';
 
 interface BarcodeScannerProps {
   onScan: (code: string) => void;
@@ -30,10 +31,18 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [cameraLabel, setCameraLabel] = useState('');
+  const [torchSupported, setTorchSupported] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     let zxingReader: BrowserMultiFormatReader | null = null;
+
+    function detectTorch(stream: MediaStream) {
+      const track = stream.getVideoTracks()[0];
+      const caps = track?.getCapabilities?.() as (MediaTrackCapabilities & { torch?: boolean }) | undefined;
+      if (caps?.torch) setTorchSupported(true);
+    }
 
     function handleError(e: unknown) {
       if (cancelled) return;
@@ -73,13 +82,17 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
 
         // Soft resolution preference only (`ideal`, never `min`/`exact`) —
         // a 1D barcode needs enough pixels to resolve its thin bars, but
-        // this must never hard-fail on a camera that can't hit it.
+        // this must never hard-fail on a camera that can't hit it. 720p was
+        // frequently too coarse to resolve bars on small/worn labels, which
+        // is why a scan often needed several attempts before it decoded;
+        // 1080p (still just a preference) gives the decoder more to work with.
         const constraints: MediaStreamConstraints = {
           video: {
             deviceId: backCamera ? { exact: backCamera.deviceId } : undefined,
             facingMode: backCamera ? undefined : { ideal: 'environment' },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet],
           },
         };
 
@@ -96,6 +109,7 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
             return;
           }
           streamRef.current = stream;
+          detectTorch(stream);
 
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
@@ -167,7 +181,14 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
         });
 
         if (videoRef.current) {
-          videoRef.current.onloadeddata = () => setLoading(false);
+          videoRef.current.onloadeddata = () => {
+            setLoading(false);
+            const zxStream = videoRef.current?.srcObject as MediaStream | null;
+            if (zxStream) {
+              streamRef.current = zxStream;
+              detectTorch(zxStream);
+            }
+          };
         }
         setTimeout(() => setLoading(false), 1500);
       } catch (e) {
@@ -186,6 +207,18 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const toggleTorch = async () => {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track) return;
+    const next = !torchOn;
+    try {
+      await track.applyConstraints({ advanced: [{ torch: next } as MediaTrackConstraintSet] });
+      setTorchOn(next);
+    } catch {
+      toast.error('Чироқни ёқиб бўлмади');
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col">
       {/* Header */}
@@ -196,12 +229,26 @@ export function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps) {
             <p className="text-xs text-white/50 mt-0.5 truncate max-w-[200px]">{cameraLabel}</p>
           )}
         </div>
-        <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"
-        >
-          ✕
-        </button>
+        <div className="flex items-center gap-2">
+          {torchSupported && (
+            <button
+              onClick={toggleTorch}
+              className={cn(
+                'w-9 h-9 rounded-full flex items-center justify-center text-white transition-colors',
+                torchOn ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white/20 hover:bg-white/30'
+              )}
+              title="Хира ёруғликда чироқни ёқинг"
+            >
+              🔦
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
       {error ? (

@@ -40,6 +40,11 @@ const productSchema = new Schema<IProduct>(
 );
 
 productSchema.index({ name: 'text' });
+// Every list query filters on isActive and sorts by name (or filters by
+// category too) — without these, Mongo does a full collection scan plus an
+// in-memory sort on every request, which gets slower as the catalog grows.
+productSchema.index({ isActive: 1, name: 1 });
+productSchema.index({ isActive: 1, category: 1, name: 1 });
 
 productSchema.set('toJSON', {
   transform: (_doc, ret: any) => {

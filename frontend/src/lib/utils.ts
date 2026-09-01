@@ -77,3 +77,25 @@ export function getCategoryName(category?: { name?: string } | string): string {
   if (typeof category === 'string') return category;
   return category.name || '—';
 }
+
+export function getExpenseCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    ARENDA: 'Аренда',
+    KOMMUNAL: 'Коммунал',
+    OYLIK: 'Ойлик',
+    TRANSPORT: 'Транспорт',
+    BOSHQA: 'Бошқа',
+  };
+  return labels[category] || category;
+}
+
+export function getExpenseCategoryIcon(category: string): string {
+  const icons: Record<string, string> = {
+    ARENDA: '🏠',
+    KOMMUNAL: '💡',
+    OYLIK: '👥',
+    TRANSPORT: '🚚',
+    BOSHQA: '📌',
+  };
+  return icons[category] || '📌';
+}

@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { Sale } from '../models/Sale';
 import { Product } from '../models/Product';
+import { Expense } from '../models/Expense';
 import { requireRole } from '../middleware/auth';
 
 export async function reportsRoutes(app: FastifyInstance) {
@@ -23,10 +24,10 @@ export async function reportsRoutes(app: FastifyInstance) {
       startDate.setHours(0, 0, 0, 0);
     }
 
-    const sales = await Sale.find({ createdAt: { $gte: startDate }, status: 'COMPLETED' }).populate(
-      'kassir',
-      'name'
-    );
+    const [sales, expenses] = await Promise.all([
+      Sale.find({ createdAt: { $gte: startDate }, status: 'COMPLETED' }).populate('kassir', 'name'),
+      Expense.find({ date: { $gte: startDate } }),
+    ]);
 
     const productCostMap = new Map<string, number>();
     const products = await Product.find({}, 'costPrice');
@@ -49,6 +50,8 @@ export async function reportsRoutes(app: FastifyInstance) {
       );
     }, 0);
     const grossProfit = totalRevenue - totalCost;
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const netProfit = grossProfit - totalExpenses;
 
     // Top products
     const productStats = new Map<string, { name: string; quantity: number; revenue: number; profit: number }>();
@@ -110,6 +113,8 @@ export async function reportsRoutes(app: FastifyInstance) {
         totalRevenue,
         totalCost,
         grossProfit,
+        totalExpenses,
+        netProfit,
         salesCount: sales.length,
         stockValueCost,
         stockValueSale,

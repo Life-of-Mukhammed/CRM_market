@@ -1,7 +1,30 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import mongoose from 'mongoose';
 import { Product } from '../models/Product';
 import { authenticate, requireRole } from '../middleware/auth';
+
+const categoryLookupStage = {
+  $lookup: {
+    from: 'categories',
+    localField: 'category',
+    foreignField: '_id',
+    as: 'category',
+    pipeline: [{ $project: { name: 1, icon: 1 } }],
+  },
+};
+
+// Mirrors the shape Product's toJSON transform + populate('category', 'name icon')
+// used to produce, but for raw aggregation output (which skips Mongoose's
+// document transforms since it returns plain objects).
+function serializeProduct(doc: Record<string, any>) {
+  const { _id, __v, category, ...rest } = doc;
+  return {
+    ...rest,
+    id: _id,
+    category: category ? { id: category._id, name: category.name, icon: category.icon } : undefined,
+  };
+}
 
 const productSchema = z.object({
   name: z.string().min(1),
@@ -38,12 +61,31 @@ export async function productRoutes(app: FastifyInstance) {
         { barcode: { $regex: escaped, $options: 'i' } },
       ];
     }
-    if (query.category) where.category = query.category;
+    // Aggregation's $match does its own BSON matching and, unlike Mongoose's
+    // query casting, won't coerce a string into the ObjectId the `category`
+    // field is actually stored as — so this must be cast explicitly or the
+    // filter silently matches nothing.
+    if (query.category && mongoose.Types.ObjectId.isValid(query.category)) {
+      where.category = new mongoose.Types.ObjectId(query.category);
+    }
 
-    const [products, total] = await Promise.all([
-      Product.find(where).populate('category', 'name icon').sort({ name: 1 }).skip(skip).limit(limit),
-      Product.countDocuments(where),
+    // A single aggregation (data page + total count + category lookup) instead
+    // of three separate round trips to the DB — on a remote cluster each round
+    // trip costs hundreds of ms, so this is the difference between one network
+    // hop and three for every product list/search request.
+    const [result] = await Product.aggregate([
+      { $match: where },
+      { $sort: { name: 1 } },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }, categoryLookupStage, { $unwind: '$category' }],
+          totalCount: [{ $count: 'count' }],
+        },
+      },
     ]);
+
+    const products = (result?.data || []).map(serializeProduct);
+    const total = result?.totalCount[0]?.count || 0;
 
     return { products, total, page, limit };
   });
@@ -61,19 +103,27 @@ export async function productRoutes(app: FastifyInstance) {
     if (/^0\d{12}$/.test(code)) candidates.add(code.slice(1));
     if (/^\d{12}$/.test(code)) candidates.add(`0${code}`);
 
-    const product = await Product.findOne({
-      barcode: { $in: Array.from(candidates) },
-      isActive: true,
-    }).populate('category', 'name icon');
+    const [product] = await Product.aggregate([
+      { $match: { barcode: { $in: Array.from(candidates) }, isActive: true } },
+      { $limit: 1 },
+      categoryLookupStage,
+      { $unwind: '$category' },
+    ]);
     if (!product) return reply.status(404).send({ error: 'Бундай штрих-кодли товар мавжуд эмас' });
-    return product;
+    return serializeProduct(product);
   });
 
   app.get('/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
-    const product = await Product.findById(id).populate('category', 'name icon');
+    if (!mongoose.Types.ObjectId.isValid(id)) return reply.status(404).send({ error: 'Маҳсулот топилмади' });
+
+    const [product] = await Product.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(id) } },
+      categoryLookupStage,
+      { $unwind: '$category' },
+    ]);
     if (!product) return reply.status(404).send({ error: 'Маҳсулот топилмади' });
-    return product;
+    return serializeProduct(product);
   });
 
   app.post('/', { preHandler: [requireRole('DIREKTOR')] }, async (request, reply) => {

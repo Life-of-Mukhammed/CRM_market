@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Modal } from '@/components/ui/Modal';
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { products as productsApi, categories as categoriesApi } from '@/lib/api';
 import { Product, Category } from '@/types';
-import { formatMoney, calcProfit, getCategoryIcon, getCategoryName } from '@/lib/utils';
+import { formatMoney, calcProfit, getCategoryIcon, getCategoryName, cn } from '@/lib/utils';
 import { useDebounce } from '@/lib/useDebounce';
 import toast from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
@@ -46,13 +46,14 @@ export default function MahsulotlarPage() {
   });
   const categoriesList: Category[] = categoriesData || [];
 
-  const { data: productsData, isLoading } = useQuery({
+  const { data: productsData, isLoading, isFetching } = useQuery({
     queryKey: ['products', debouncedSearch, selectedCategory],
     queryFn: () => productsApi.list({
       search: debouncedSearch || undefined,
       category: selectedCategory || undefined,
       limit: 200,
     }).then((r) => r.data),
+    placeholderData: keepPreviousData,
   });
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<FormData>({
@@ -183,7 +184,7 @@ export default function MahsulotlarPage() {
               <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto" />
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className={cn('overflow-x-auto transition-opacity', isFetching && 'opacity-60')}>
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-dark-700">
@@ -205,7 +206,7 @@ export default function MahsulotlarPage() {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-dark-700 flex items-center justify-center text-lg flex-shrink-0">
                               {product.image ? (
-                                <img src={product.image} alt="" className="w-full h-full object-cover rounded-xl" />
+                                <img src={product.image} alt="" loading="lazy" className="w-full h-full object-cover rounded-xl" />
                               ) : (
                                 getCategoryIcon(product)
                               )}

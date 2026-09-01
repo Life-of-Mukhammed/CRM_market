@@ -11,6 +11,7 @@ import { productRoutes } from './routes/products';
 import { categoryRoutes } from './routes/categories';
 import { salesRoutes } from './routes/sales';
 import { reportsRoutes } from './routes/reports';
+import { expensesRoutes } from './routes/expenses';
 
 const app = Fastify({ logger: true });
 
@@ -26,6 +27,7 @@ async function start() {
   const allowedOrigins = [
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'http://localhost:3000',
+    'http://localhost:3001',
   ];
 
   await app.register(cors, {
@@ -57,6 +59,7 @@ async function start() {
   await app.register(categoryRoutes, { prefix: '/api/categories' });
   await app.register(salesRoutes, { prefix: '/api/sales' });
   await app.register(reportsRoutes, { prefix: '/api/reports' });
+  await app.register(expensesRoutes, { prefix: '/api/expenses' });
 
   app.get('/health', async () => ({ status: 'ok', time: new Date().toISOString() }));
 

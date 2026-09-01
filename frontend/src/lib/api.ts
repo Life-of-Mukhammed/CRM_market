@@ -58,3 +58,10 @@ export const sales = {
 export const reports = {
   dashboard: (params?: Record<string, unknown>) => api.get('/reports/dashboard', { params }),
 };
+
+export const expenses = {
+  list: (params?: Record<string, unknown>) => api.get('/expenses', { params }),
+  create: (data: Record<string, unknown>) => api.post('/expenses', data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/expenses/${id}`, data),
+  delete: (id: string) => api.delete(`/expenses/${id}`),
+};

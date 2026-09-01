@@ -74,10 +74,24 @@ export default function DirektorDashboard() {
             <StatCard title="Умумий тушум" value={formatMoney(s?.totalRevenue || 0)} icon="💰" color="green" />
             <StatCard title="Таннарх" value={formatMoney(s?.totalCost || 0)} icon="📦" color="orange" />
             <StatCard
-              title="Фойда"
+              title="Ялпи фойда"
               value={formatMoney(s?.grossProfit || 0)}
               icon={s?.grossProfit && s.grossProfit >= 0 ? '✅' : '❌'}
               color={s?.grossProfit && s.grossProfit >= 0 ? 'green' : 'red'}
+            />
+          </div>
+        )}
+
+        {/* Expenses & net profit */}
+        {!isLoading && (
+          <div className="grid grid-cols-2 gap-4">
+            <StatCard title="Харажатлар" value={formatMoney(s?.totalExpenses || 0)} icon="💸" color="red" />
+            <StatCard
+              title="Соф фойда"
+              value={formatMoney(s?.netProfit || 0)}
+              sub="Ялпи фойда − харажатлар"
+              icon={s?.netProfit && s.netProfit >= 0 ? '🟢' : '🔴'}
+              color={s?.netProfit && s.netProfit >= 0 ? 'green' : 'red'}
             />
           </div>
         )}

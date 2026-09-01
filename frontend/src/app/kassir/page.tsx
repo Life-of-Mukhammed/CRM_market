@@ -8,7 +8,7 @@ import { products as productsApi, sales as salesApi, categories as categoriesApi
 import { Product, CartItem, Sale, PaymentType, Category } from '@/types';
 import { formatMoney, getCategoryIcon } from '@/lib/utils';
 import { useDebounce } from '@/lib/useDebounce';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 
@@ -88,6 +88,7 @@ export default function KassirPOS() {
       productsApi
         .list({ search: debouncedSearch || undefined, category: selectedCategory || undefined, limit: 100 })
         .then((r) => r.data),
+    placeholderData: keepPreviousData,
   });
 
   const addToCart = useCallback(
@@ -306,6 +307,7 @@ export default function KassirPOS() {
                         <img
                           src={product.image}
                           alt={product.name}
+                          loading="lazy"
                           className="w-full h-16 object-cover rounded-lg mb-2"
                         />
                       ) : (
