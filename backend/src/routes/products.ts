@@ -90,6 +90,33 @@ export async function productRoutes(app: FastifyInstance) {
     return { products, total, page, limit };
   });
 
+  app.get('/image-search', { preHandler: [requireRole('DIREKTOR')] }, async (request, reply) => {
+    const { q } = request.query as { q?: string };
+    const query = q?.trim();
+    if (!query) return reply.status(400).send({ error: 'Қидирув сўзи керак' });
+
+    const url = new URL('https://api.openverse.org/v1/images/');
+    url.searchParams.set('q', query);
+    url.searchParams.set('page_size', '8');
+    url.searchParams.set('mature', 'false');
+
+    const searchRes = await fetch(url, { headers: { 'User-Agent': 'AYFA-market-app' } });
+    if (!searchRes.ok) {
+      const detail = await searchRes.text().catch(() => '');
+      request.log.error({ detail }, 'Openverse image search failed');
+      return reply.status(502).send({ error: 'Расм қидиришда хатолик юз берди' });
+    }
+
+    const data = (await searchRes.json()) as {
+      results?: { url: string; thumbnail: string }[];
+    };
+    const images = (data.results || []).map((item) => ({
+      url: item.url,
+      thumbnail: item.thumbnail || item.url,
+    }));
+    return { images };
+  });
+
   app.get('/barcode/:barcode', { preHandler: [authenticate] }, async (request, reply) => {
     const { barcode } = request.params as { barcode: string };
     const code = barcode.trim();

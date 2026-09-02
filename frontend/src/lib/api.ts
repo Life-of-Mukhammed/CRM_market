@@ -36,6 +36,7 @@ export const products = {
   list: (params?: Record<string, unknown>) => api.get('/products', { params }),
   get: (id: string) => api.get(`/products/${id}`),
   byBarcode: (barcode: string) => api.get(`/products/barcode/${barcode}`),
+  imageSearch: (q: string) => api.get('/products/image-search', { params: { q } }),
   create: (data: Record<string, unknown>) => api.post('/products', data),
   update: (id: string, data: Record<string, unknown>) => api.put(`/products/${id}`, data),
   delete: (id: string) => api.delete(`/products/${id}`),

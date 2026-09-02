@@ -38,6 +38,7 @@ export default function MahsulotlarPage() {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [imageCandidates, setImageCandidates] = useState<{ url: string; thumbnail: string }[]>([]);
   const debouncedSearch = useDebounce(search);
 
   const { data: categoriesData } = useQuery({
@@ -64,6 +65,33 @@ export default function MahsulotlarPage() {
   const costPrice = watch('costPrice') || 0;
   const salePrice = watch('salePrice') || 0;
   const { profit, percent } = calcProfit(salePrice, costPrice);
+  const currentImage = watch('image');
+
+  const imageSearchMutation = useMutation({
+    mutationFn: (query: string) => productsApi.imageSearch(query).then((r) => r.data),
+    onSuccess: (data: { images: { url: string; thumbnail: string }[] }) => {
+      setImageCandidates(data.images || []);
+      if (data.images?.[0]) setValue('image', data.images[0].url);
+      if (!data.images?.length) toast.error('Расм топилмади');
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Расм қидиришда хатолик';
+      toast.error(msg);
+    },
+  });
+
+  const handleAutoImage = () => {
+    const name = watch('name');
+    const brand = watch('brand');
+    const author = watch('author');
+    const query = [name, brand || author].filter(Boolean).join(' ').trim();
+    if (!query) {
+      toast.error('Аввал маҳсулот номини киритинг');
+      return;
+    }
+    setImageCandidates([]);
+    imageSearchMutation.mutate(query);
+  };
 
   const saveMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) => editProduct
@@ -107,12 +135,14 @@ export default function MahsulotlarPage() {
     setValue('unit', product.unit);
     setValue('quantity', product.quantity);
     setValue('image', product.image || '');
+    setImageCandidates([]);
     setModalOpen(true);
   };
 
   const openNew = () => {
     setEditProduct(null);
     reset({ unit: 'дона', quantity: 1, category: categoriesList[0]?.id || '' });
+    setImageCandidates([]);
     setModalOpen(true);
   };
 
@@ -398,8 +428,39 @@ export default function MahsulotlarPage() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Расм URL (ихтиёрий)</label>
-              <input {...register('image')} className="input" placeholder="https://..." type="url" />
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Расм (ихтиёрий)</label>
+              <div className="flex gap-2">
+                <input {...register('image')} className="input" placeholder="https://..." type="url" />
+                {currentImage && (
+                  <img src={currentImage} alt="" className="w-11 h-11 rounded-xl object-cover shrink-0 bg-gray-100 dark:bg-dark-700" />
+                )}
+                <button
+                  type="button"
+                  onClick={handleAutoImage}
+                  disabled={imageSearchMutation.isPending}
+                  className="btn-accent px-3 shrink-0 whitespace-nowrap"
+                  title="Ном/бренд бўйича расмни автоматик топиш"
+                >
+                  {imageSearchMutation.isPending ? '...' : '🔎 Автотопиш'}
+                </button>
+              </div>
+              {imageCandidates.length > 1 && (
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {imageCandidates.map((img) => (
+                    <button
+                      key={img.url}
+                      type="button"
+                      onClick={() => setValue('image', img.url)}
+                      className={cn(
+                        'w-12 h-12 rounded-lg overflow-hidden border-2 shrink-0',
+                        currentImage === img.url ? 'border-primary-500' : 'border-transparent'
+                      )}
+                    >
+                      <img src={img.thumbnail} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </form>
