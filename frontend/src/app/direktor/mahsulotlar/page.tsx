@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Modal } from '@/components/ui/Modal';
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner';
+import { PhotoCapture } from '@/components/scanner/PhotoCapture';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { products as productsApi, categories as categoriesApi } from '@/lib/api';
 import { Product, Category } from '@/types';
@@ -38,6 +39,7 @@ export default function MahsulotlarPage() {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [imageCandidates, setImageCandidates] = useState<{ url: string; thumbnail: string }[]>([]);
   const debouncedSearch = useDebounce(search);
 
@@ -436,6 +438,14 @@ export default function MahsulotlarPage() {
                 )}
                 <button
                   type="button"
+                  onClick={() => setCameraOpen(true)}
+                  className="btn-accent px-3 shrink-0"
+                  title="Камера билан расмга олиш"
+                >
+                  📸
+                </button>
+                <button
+                  type="button"
                   onClick={handleAutoImage}
                   disabled={imageSearchMutation.isPending}
                   className="btn-accent px-3 shrink-0 whitespace-nowrap"
@@ -469,6 +479,18 @@ export default function MahsulotlarPage() {
       {/* Barcode scanner for the form */}
       {scannerOpen && (
         <BarcodeScanner onScan={handleScan} onClose={() => setScannerOpen(false)} />
+      )}
+
+      {/* Camera photo capture for the form */}
+      {cameraOpen && (
+        <PhotoCapture
+          onCapture={(dataUrl) => {
+            setValue('image', dataUrl);
+            setImageCandidates([]);
+            setCameraOpen(false);
+          }}
+          onClose={() => setCameraOpen(false)}
+        />
       )}
 
       {/* Delete confirm */}
