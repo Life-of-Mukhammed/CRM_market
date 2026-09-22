@@ -1,11 +1,14 @@
 import 'dotenv/config';
+import path from 'node:path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import fastifyStatic from '@fastify/static';
 
 import { connectDB } from './utils/db';
+import { UPLOADS_DIR } from './utils/uploads';
 import { authRoutes } from './routes/auth';
 import { productRoutes } from './routes/products';
 import { categoryRoutes } from './routes/categories';
@@ -22,7 +25,14 @@ async function start() {
 
   await connectDB();
 
-  await app.register(helmet);
+  // cross-origin so the frontend (different port/origin) can load uploaded
+  // product images directly from /uploads.
+  await app.register(helmet, { crossOriginResourcePolicy: { policy: 'cross-origin' } });
+
+  await app.register(fastifyStatic, {
+    root: UPLOADS_DIR,
+    prefix: '/uploads/',
+  });
 
   const allowedOrigins = [
     process.env.FRONTEND_URL || 'http://localhost:3000',

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import mongoose from 'mongoose';
 import { Product } from '../models/Product';
 import { authenticate, requireRole } from '../middleware/auth';
+import { saveDataUrlImage } from '../utils/uploads';
 
 const categoryLookupStage = {
   $lookup: {
@@ -88,6 +89,18 @@ export async function productRoutes(app: FastifyInstance) {
     const total = result?.totalCount[0]?.count || 0;
 
     return { products, total, page, limit };
+  });
+
+  app.post('/upload-image', { preHandler: [requireRole('DIREKTOR')] }, async (request, reply) => {
+    const { image } = request.body as { image?: string };
+    if (!image) return reply.status(400).send({ error: 'Расм керак' });
+
+    try {
+      const relativeUrl = saveDataUrlImage(image);
+      return { url: `${request.protocol}://${request.headers.host}${relativeUrl}` };
+    } catch (err: unknown) {
+      return reply.status(400).send({ error: (err as Error).message || 'Расмни сақлаб бўлмади' });
+    }
   });
 
   app.get('/image-search', { preHandler: [requireRole('DIREKTOR')] }, async (request, reply) => {

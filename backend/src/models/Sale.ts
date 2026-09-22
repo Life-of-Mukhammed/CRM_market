@@ -53,6 +53,14 @@ const saleSchema = new Schema<ISale>(
   { timestamps: true }
 );
 
+// Sales list, "today's sales", and the dashboard report all filter/sort by
+// createdAt (optionally scoped to a kassir or COMPLETED status) — without
+// these, Mongo falls back to a full collection scan + in-memory sort on
+// every request, which gets slower as sales history grows.
+saleSchema.index({ createdAt: -1 });
+saleSchema.index({ kassir: 1, createdAt: -1 });
+saleSchema.index({ status: 1, createdAt: -1 });
+
 saleSchema.set('toJSON', {
   transform: (_doc, ret: any) => {
     ret.id = ret._id;

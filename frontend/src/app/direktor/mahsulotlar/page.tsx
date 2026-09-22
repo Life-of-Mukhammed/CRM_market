@@ -82,6 +82,18 @@ export default function MahsulotlarPage() {
     },
   });
 
+  const uploadImageMutation = useMutation({
+    mutationFn: (dataUrl: string) => productsApi.uploadImage(dataUrl).then((r) => r.data as { url: string }),
+    onSuccess: (data) => {
+      setValue('image', data.url);
+      setImageCandidates([]);
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Расмни юклашда хатолик';
+      toast.error(msg);
+    },
+  });
+
   const handleAutoImage = () => {
     const name = watch('name');
     const brand = watch('brand');
@@ -439,10 +451,11 @@ export default function MahsulotlarPage() {
                 <button
                   type="button"
                   onClick={() => setCameraOpen(true)}
+                  disabled={uploadImageMutation.isPending}
                   className="btn-accent px-3 shrink-0"
                   title="Камера билан расмга олиш"
                 >
-                  📸
+                  {uploadImageMutation.isPending ? '...' : '📸'}
                 </button>
                 <button
                   type="button"
@@ -485,9 +498,8 @@ export default function MahsulotlarPage() {
       {cameraOpen && (
         <PhotoCapture
           onCapture={(dataUrl) => {
-            setValue('image', dataUrl);
-            setImageCandidates([]);
             setCameraOpen(false);
+            uploadImageMutation.mutate(dataUrl);
           }}
           onClose={() => setCameraOpen(false)}
         />

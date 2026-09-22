@@ -30,6 +30,12 @@ const expenseSchema = new Schema<IExpense>(
   { timestamps: true }
 );
 
+// Expense list filters/sorts by date (optionally scoped to a category) —
+// without this, Mongo does a full collection scan + in-memory sort on every
+// request, which gets slower as expense history grows.
+expenseSchema.index({ date: -1 });
+expenseSchema.index({ category: 1, date: -1 });
+
 expenseSchema.set('toJSON', {
   transform: (_doc, ret: any) => {
     ret.id = ret._id;
